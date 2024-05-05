@@ -22,6 +22,12 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+  public static class AutoConstants {
+    public static final double kPThetaController = 0;
+    public static final double kPXController = 0;
+  }
+
   public static final Mode currentMode = Mode.SIM;
 
   public static enum Mode {
