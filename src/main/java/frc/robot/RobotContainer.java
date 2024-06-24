@@ -38,6 +38,8 @@ import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.flywheel.FlywheelIO;
 import frc.robot.subsystems.flywheel.FlywheelIOSim;
 import frc.robot.subsystems.flywheel.FlywheelIOTalonFX;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIOSim;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,7 +63,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Flywheel flywheel;
-
+  private final Vision vision;
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
   private final LoggedDashboardChooser<Command> autoChooser;
@@ -83,8 +85,10 @@ public class RobotContainer {
                 new ModuleIOTalonFX(0),
                 new ModuleIOTalonFX(1),
                 new ModuleIOTalonFX(2),
-                new ModuleIOTalonFX(3));
+                new ModuleIOTalonFX(3),
+                new Vision(new VisionIOSim()));
         flywheel = new Flywheel(new FlywheelIOTalonFX());
+        vision = new Vision(new VisionIOSim());
         break;
 
       case SIM:
@@ -95,8 +99,10 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim(),
-                new ModuleIOSim());
+                new ModuleIOSim(),
+                new Vision(new VisionIOSim()));
         flywheel = new Flywheel(new FlywheelIOSim());
+        vision = new Vision(new VisionIOSim());
         break;
 
       default:
@@ -107,8 +113,10 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
-                new ModuleIO() {});
+                new ModuleIO() {},
+                new Vision(new VisionIOSim()));
         flywheel = new Flywheel(new FlywheelIO() {});
+        vision = new Vision(new VisionIOSim());
         break;
     }
 

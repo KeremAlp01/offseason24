@@ -40,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.LocalADStarAK;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -51,6 +52,8 @@ public class Drive extends SubsystemBase {
   private static final double DRIVE_BASE_RADIUS =
       Math.hypot(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0);
   private static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / DRIVE_BASE_RADIUS;
+
+  private final Vision vision;
 
   ChoreoTrajectory trajectory = Choreo.getTrajectory("Trajectory");
 
@@ -76,8 +79,10 @@ public class Drive extends SubsystemBase {
       ModuleIO flModuleIO,
       ModuleIO frModuleIO,
       ModuleIO blModuleIO,
-      ModuleIO brModuleIO) {
+      ModuleIO brModuleIO,
+      Vision vision) {
     this.gyroIO = gyroIO;
+    this.vision = vision;
     modules[0] = new Module(flModuleIO, 0);
     modules[1] = new Module(frModuleIO, 1);
     modules[2] = new Module(blModuleIO, 2);
@@ -125,6 +130,7 @@ public class Drive extends SubsystemBase {
   }
 
   public void periodic() {
+
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
     for (var module : modules) {
@@ -154,6 +160,7 @@ public class Drive extends SubsystemBase {
               modulePositions[moduleIndex].angle);
       lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
     }
+    Logger.recordOutput("estimated Pose", poseEstimator.getEstimatedPosition());
 
     // Update gyro angle
     if (gyroInputs.connected) {
@@ -164,9 +171,15 @@ public class Drive extends SubsystemBase {
       Twist2d twist = kinematics.toTwist2d(moduleDeltas);
       rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
     }
-
     // Apply odometry update
     poseEstimator.update(rawGyroRotation, modulePositions);
+    vision.setReferencePose(getPose());
+
+    if (vision.getPoseAndTimestamp().getPose() != null
+        && vision.getPoseAndTimestamp().getTimestamp() != Double.NaN) {
+      addVisionMeasurement(
+          vision.getPoseAndTimestamp().getPose(), vision.getPoseAndTimestamp().getTimestamp());
+    }
   }
 
   /**
